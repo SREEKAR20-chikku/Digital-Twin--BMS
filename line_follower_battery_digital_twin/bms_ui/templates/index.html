@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BMS Digital Twin Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+
+<div class="container-fluid">
+
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div class="header-left">
+      <div class="logo-icon">
+        <i class="fas fa-battery-full"></i>
+      </div>
+      <div>
+        <h1>BMS Digital Twin Dashboard</h1>
+        <div class="subtitle">Advanced Battery Management System with Hybrid Physics + ML Fusion</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="system-status" id="systemStatus">
+        <div class="status-indicator good"></div>
+        <span>System Healthy</span>
+      </div>
+      <a href="/analytics" class="nav-link" title="View detailed analytics">
+        <i class="fas fa-chart-line"></i> Analytics
+      </a>
+      <div class="last-update" id="lastUpdate">Last update: —</div>
+    </div>
+  </div>
+
+  <!-- Primary KPI Cards -->
+  <div class="row mb-4 g-3">
+    <div class="col-md-3">
+      <div class="card kpi-card">
+        <div class="kpi-header">
+          <div class="kpi-icon soc-icon">
+            <i class="fas fa-charge-filled"></i>
+          </div>
+          <div class="kpi-label">STATE OF CHARGE</div>
+        </div>
+        <div class="gauge-wrap">
+          <canvas id="socGauge" width="140" height="140"></canvas>
+          <div class="gauge-center">
+            <div class="g-val" id="socVal">—</div>
+            <div class="g-percent">%</div>
+          </div>
+        </div>
+        <div class="kpi-models" id="socModels">Physics — · ML —</div>
+        <div class="kpi-bar-wrap"><div class="kpi-bar" id="battBar" style="width:0%;"></div></div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card kpi-card">
+        <div class="kpi-header">
+          <div class="kpi-icon soh-icon">
+            <i class="fas fa-heart"></i>
+          </div>
+          <div class="kpi-label">STATE OF HEALTH</div>
+        </div>
+        <div class="gauge-wrap">
+          <canvas id="sohGauge" width="140" height="140"></canvas>
+          <div class="gauge-center">
+            <div class="g-val" id="sohVal">—</div>
+            <div class="g-percent">%</div>
+          </div>
+        </div>
+        <div class="kpi-models" id="sohModels">Physics — · ML —</div>
+        <div class="kpi-status" id="sohStatus">
+          <span class="status-badge good" id="sohBadge">Excellent</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card kpi-card">
+        <div class="kpi-header">
+          <div class="kpi-icon temp-icon">
+            <i class="fas fa-thermometer"></i>
+          </div>
+          <div class="kpi-label">TEMPERATURE</div>
+        </div>
+        <div class="gauge-wrap">
+          <canvas id="tempGauge" width="140" height="140"></canvas>
+          <div class="gauge-center">
+            <div class="g-val" id="tempVal">—</div>
+            <div class="g-percent">°C</div>
+          </div>
+        </div>
+        <div class="kpi-models" id="tempModels">Physics — · ML —</div>
+        <div class="kpi-status" id="tempStatus">
+          <span class="status-badge good" id="tempBadge">Normal</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card kpi-card">
+        <div class="kpi-header">
+          <div class="kpi-icon health-icon">
+            <i class="fas fa-clipboard-check"></i>
+          </div>
+          <div class="kpi-label">SYSTEM HEALTH</div>
+        </div>
+        <div class="health-score" id="healthScore">
+          <div class="health-value">—</div>
+          <div class="health-label">Score</div>
+        </div>
+        <div id="warnList" style="margin-top:12px;font-size:11px"></div>
+        <div class="kpi-footer">
+          <span class="cycle-badge">
+            <i class="fas fa-sync-alt"></i>
+            <span id="cycleCount">0</span> cycles
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Metrics Strip -->
+  <div class="metrics-board mb-4">
+    <div class="metrics-row">
+      <div class="metric-item">
+        <div class="metric-icon"><i class="fas fa-bolt"></i></div>
+        <div class="metric-content">
+          <div class="metric-label">Voltage</div>
+          <div class="metric-value" id="voltVal">—</div>
+          <div class="metric-unit">V</div>
+        </div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-icon"><i class="fas fa-water"></i></div>
+        <div class="metric-content">
+          <div class="metric-label">Current</div>
+          <div class="metric-value" id="currVal">—</div>
+          <div class="metric-unit">A</div>
+        </div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-icon"><i class="fas fa-cube"></i></div>
+        <div class="metric-content">
+          <div class="metric-label">Capacity</div>
+          <div class="metric-value" id="capVal">—</div>
+          <div class="metric-unit">Ah</div>
+        </div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-icon"><i class="fas fa-wave-square"></i></div>
+        <div class="metric-content">
+          <div class="metric-label">Physics Error</div>
+          <div class="metric-value" id="errPhyVal">—</div>
+          <div class="metric-unit">%</div>
+        </div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-icon"><i class="fas fa-brain"></i></div>
+        <div class="metric-content">
+          <div class="metric-label">ML Error</div>
+          <div class="metric-value" id="errMlVal">—</div>
+          <div class="metric-unit">%</div>
+        </div>
+      </div>
+      <div class="metric-item highlight">
+        <div class="metric-icon"><i class="fas fa-code"></i></div>
+        <div class="metric-content">
+          <div class="metric-label">Fusion Weight (α)</div>
+          <div class="metric-value" id="alphaVal">—</div>
+          <div class="metric-unit">%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytics Section -->
+  <div class="section-header mb-4">
+    <h2><i class="fas fa-chart-line"></i> Real-time Analytics</h2>
+    <p>Model comparison and system performance metrics</p>
+  </div>
+
+  <!-- Row 1: Sensor Trends + Model Comparison -->
+  <div class="row mb-4 g-3">
+    <div class="col-lg-8">
+      <div class="card chart-card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fas fa-wave-square"></i> Sensor Trends
+          </div>
+          <span class="card-info">Voltage, Current & Temperature</span>
+        </div>
+        <div style="position:relative;height:300px;">
+          <canvas id="trendsChart" role="img" aria-label="Live voltage, current and temperature over time"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card chart-card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fas fa-crosshairs"></i> Model Accuracy
+          </div>
+          <span class="card-info">SOC Estimation Error</span>
+        </div>
+        <div style="position:relative;height:300px;">
+          <canvas id="errChart" role="img" aria-label="Running SOC error for models"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: SOC Comparison + Fusion Weight -->
+  <div class="row mb-4 g-3">
+    <div class="col-lg-6">
+      <div class="card chart-card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fas fa-object-group"></i> SOC Estimation
+          </div>
+          <span class="card-info">Physics vs ML vs Hybrid Fusion</span>
+        </div>
+        <div style="position:relative;height:280px;">
+          <canvas id="socCompChart" role="img" aria-label="SOC comparison for all models"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card chart-card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fas fa-sliders"></i> Adaptive Fusion α
+          </div>
+          <span class="card-info">Physics Model Trust Weight</span>
+        </div>
+        <div style="position:relative;height:280px;">
+          <canvas id="alphaChart" role="img" aria-label="Alpha weight indicating physics vs ML trust"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 3: Health Metrics -->
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="card chart-card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fas fa-heart-pulse"></i> Battery Health
+          </div>
+          <span class="card-info">SOH Degradation Trend</span>
+        </div>
+        <div style="position:relative;height:260px;">
+          <canvas id="sohChart" role="img" aria-label="State of Health degradation over time"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card chart-card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fas fa-temperature-high"></i> Thermal Profile
+          </div>
+          <span class="card-info">Temperature Over Time</span>
+        </div>
+        <div style="position:relative;height:260px;">
+          <canvas id="tempChart" role="img" aria-label="Temperature trends over time"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="/static/js/script.js"></script>
+</body>
+</html>

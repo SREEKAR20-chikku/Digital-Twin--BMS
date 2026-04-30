@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battery Analytics Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <link rel="stylesheet" href="/static/css/analytics.css">
+</head>
+<body>
+
+<div class="analytics-container">
+    <!-- Header -->
+    <div class="analytics-header">
+        <div class="header-content">
+            <h1>
+                <i class="fas fa-chart-bar"></i> Battery Analytics Dashboard
+            </h1>
+            <p>Real-time battery performance analysis and trend visualization</p>
+        </div>
+        <div class="header-actions">
+            <a href="/" class="btn-link">
+                <i class="fas fa-home"></i> Main Dashboard
+            </a>
+            <span class="update-time" id="updateTime">Last updated: —</span>
+        </div>
+    </div>
+
+    <!-- KPI Cards Section -->
+    <section class="kpi-section">
+        <div class="section-title">Key Performance Indicators</div>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-icon voltage-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <div class="kpi-content">
+                    <div class="kpi-label">Peak Voltage</div>
+                    <div class="kpi-value" id="peakVoltage">—</div>
+                    <div class="kpi-unit">V</div>
+                    <div class="kpi-subtext" id="peakVoltageTime">at —</div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon current-icon">
+                    <i class="fas fa-water"></i>
+                </div>
+                <div class="kpi-content">
+                    <div class="kpi-label">Peak Current</div>
+                    <div class="kpi-value" id="peakCurrent">—</div>
+                    <div class="kpi-unit">A</div>
+                    <div class="kpi-subtext" id="peakCurrentTime">at —</div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon temp-icon">
+                    <i class="fas fa-thermometer-half"></i>
+                </div>
+                <div class="kpi-content">
+                    <div class="kpi-label">Max Temperature</div>
+                    <div class="kpi-value" id="maxTemp">—</div>
+                    <div class="kpi-unit">°C</div>
+                    <div class="kpi-subtext" id="maxTempTime">at —</div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon duration-icon">
+                    <i class="fas fa-hourglass-end"></i>
+                </div>
+                <div class="kpi-content">
+                    <div class="kpi-label">Test Duration</div>
+                    <div class="kpi-value" id="duration">—</div>
+                    <div class="kpi-unit">min</div>
+                    <div class="kpi-subtext" id="cycleInfo">— cycles</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Primary Time-Series Graph -->
+    <section class="chart-section">
+        <div class="section-title">Multi-Axis Time Series Analysis</div>
+        <div class="chart-card">
+            <div class="chart-legend multi-legend">
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #3b82f6; border-radius: 2px;"></span>
+                    <span>Voltage (V) - Left Axis</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="border: 2px dashed #10b981; width: 16px; display: block;"></span>
+                    <span>Current (A) - Right Axis</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="border: 2px dotted #b8860b; width: 16px; display: block;"></span>
+                    <span>Temperature (°C) - Secondary Axis</span>
+                </div>
+            </div>
+            <div class="chart-container large">
+                <canvas id="multiAxisChart"></canvas>
+            </div>
+            <div class="chart-info">
+                <p><strong>Multi-Axis Display:</strong> Voltage traces on left, Current and Temperature on right axes for detailed comparison</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Graph -->
+    <section class="chart-section">
+        <div class="section-title">SOC, SOH & Temperature Comparison</div>
+        <div class="chart-card">
+            <div class="chart-legend multi-legend">
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #3b82f6;"></span>
+                    <span>State of Charge (SOC %)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #10b981;"></span>
+                    <span>State of Health (SOH %)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #b8860b;"></span>
+                    <span>Temperature (°C)</span>
+                </div>
+            </div>
+            <div class="chart-container large">
+                <canvas id="comparisonChart"></canvas>
+            </div>
+            <div class="chart-info">
+                <p><strong>System Trends:</strong> Correlation between charge state, battery health, and thermal conditions</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Zone-Based Analysis Panels -->
+    <section class="analysis-section">
+        <div class="section-title">Zone-Based Performance Analysis</div>
+        
+        <div class="zone-grid">
+            <!-- SOC Zones -->
+            <div class="zone-panel">
+                <div class="zone-header">
+                    <h3>SOC Status Over Time</h3>
+                    <p>State of Charge Distribution</p>
+                </div>
+                <div class="zone-legend">
+                    <div class="zone-item high">
+                        <span class="zone-indicator"></span>
+                        <span>High (&gt;80%)</span>
+                    </div>
+                    <div class="zone-item normal">
+                        <span class="zone-indicator"></span>
+                        <span>Normal (20-80%)</span>
+                    </div>
+                    <div class="zone-item low">
+                        <span class="zone-indicator"></span>
+                        <span>Low (&lt;20%)</span>
+                    </div>
+                </div>
+                <div class="chart-container zone-chart">
+                    <canvas id="socZoneChart"></canvas>
+                </div>
+                <div class="zone-stats">
+                    <div class="stat-row">
+                        <span>High Zone Time:</span>
+                        <strong id="socHighTime">—</strong>
+                    </div>
+                    <div class="stat-row">
+                        <span>Normal Zone Time:</span>
+                        <strong id="socNormalTime">—</strong>
+                    </div>
+                    <div class="stat-row">
+                        <span>Low Zone Time:</span>
+                        <strong id="socLowTime">—</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SOH Zones -->
+            <div class="zone-panel">
+                <div class="zone-header">
+                    <h3>SOH Status Over Time</h3>
+                    <p>Battery Health Distribution</p>
+                </div>
+                <div class="zone-legend">
+                    <div class="zone-item healthy">
+                        <span class="zone-indicator"></span>
+                        <span>Healthy (&gt;99.5%)</span>
+                    </div>
+                    <div class="zone-item moderate">
+                        <span class="zone-indicator"></span>
+                        <span>Moderate (&gt;80%)</span>
+                    </div>
+                    <div class="zone-item degraded">
+                        <span class="zone-indicator"></span>
+                        <span>Degraded (&lt;80%)</span>
+                    </div>
+                </div>
+                <div class="chart-container zone-chart">
+                    <canvas id="sohZoneChart"></canvas>
+                </div>
+                <div class="zone-stats">
+                    <div class="stat-row">
+                        <span>Healthy Time:</span>
+                        <strong id="sohHealthyTime">—</strong>
+                    </div>
+                    <div class="stat-row">
+                        <span>Moderate Time:</span>
+                        <strong id="sohModerateTime">—</strong>
+                    </div>
+                    <div class="stat-row">
+                        <span>Degraded Time:</span>
+                        <strong id="sohDegradedTime">—</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Temperature Zones -->
+            <div class="zone-panel">
+                <div class="zone-header">
+                    <h3>Temperature Status Over Time</h3>
+                    <p>Thermal Condition Distribution</p>
+                </div>
+                <div class="zone-legend">
+                    <div class="zone-item cool">
+                        <span class="zone-indicator"></span>
+                        <span>Cool (&lt;30°C)</span>
+                    </div>
+                    <div class="zone-item normal">
+                        <span class="zone-indicator"></span>
+                        <span>Normal (30-40°C)</span>
+                    </div>
+                    <div class="zone-item hot">
+                        <span class="zone-indicator"></span>
+                        <span>Warning (&gt;40°C)</span>
+                    </div>
+                </div>
+                <div class="chart-container zone-chart">
+                    <canvas id="tempZoneChart"></canvas>
+                </div>
+                <div class="zone-stats">
+                    <div class="stat-row">
+                        <span>Cool Time:</span>
+                        <strong id="tempCoolTime">—</strong>
+                    </div>
+                    <div class="stat-row">
+                        <span>Normal Time:</span>
+                        <strong id="tempNormalTime">—</strong>
+                    </div>
+                    <div class="stat-row">
+                        <span>Warning Time:</span>
+                        <strong id="tempHotTime">—</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Safety Thresholds Info -->
+    <section class="thresholds-section">
+        <div class="section-title">Safety Thresholds & Critical Zones</div>
+        <div class="thresholds-grid">
+            <div class="threshold-card alert-danger">
+                <div class="threshold-header">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Critical Voltage
+                </div>
+                <div class="threshold-value">< 3.0 V</div>
+                <div class="threshold-description">Immediate shutdown risk</div>
+                <div class="threshold-indicator" id="critVolt">Not triggered</div>
+            </div>
+
+            <div class="threshold-card alert-warning">
+                <div class="threshold-header">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Low SOC Alert
+                </div>
+                <div class="threshold-value">< 20 %</div>
+                <div class="threshold-description">Limited operating time</div>
+                <div class="threshold-indicator" id="lowSoc">Not triggered</div>
+            </div>
+
+            <div class="threshold-card alert-danger">
+                <div class="threshold-header">
+                    <i class="fas fa-thermometer-full"></i>
+                    Over Temperature
+                </div>
+                <div class="threshold-value">> 55 °C</div>
+                <div class="threshold-description">Critical thermal condition</div>
+                <div class="threshold-indicator" id="critTemp">Not triggered</div>
+            </div>
+
+            <div class="threshold-card alert-warning">
+                <div class="threshold-header">
+                    <i class="fas fa-heartbeat"></i>
+                    Battery Aging
+                </div>
+                <div class="threshold-value">SOH < 80 %</div>
+                <div class="threshold-description">Recommend maintenance</div>
+                <div class="threshold-indicator" id="aging">Not triggered</div>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script src="/static/js/analytics.js"></script>
+</body>
+</html>
